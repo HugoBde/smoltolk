@@ -1,0 +1,10 @@
+- [x] auto detect user name
+- [ ] help menu
+- [ ] multi chat support
+- [ ] vim like editing
+- [ ] multi llm support
+- [ ] auto detect llm name
+- [ ] Widgetise messages
+- [ ] Widgetise chat?
+- [ ] Code is littered with .clone(), fix that
+ 
