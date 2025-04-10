@@ -68,7 +68,7 @@ impl App {
   fn handle_events_normal(&mut self) -> Result<()> {
     if let Event::Key(key) = event::read()? {
       match key.code {
-        KeyCode::Char('q') | KeyCode::Esc => self.quit = true,
+        KeyCode::Char('q') => self.quit = true,
 
         KeyCode::Char('i') => self.mode = AppMode::Insert,
 
