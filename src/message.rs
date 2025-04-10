@@ -12,9 +12,12 @@ impl Message {
   }
 
   pub fn render(&self) -> Vec<Line> {
-    let author = self.author.render();
-    let text = Line::from(self.text.as_ref());
-    return vec![author, text];
+    let mut lines = vec![];
+    lines.push(self.author.render());
+    self.text.lines().for_each(|line| {
+      lines.push(Line::from(line));
+    });
+    return lines;
   }
 }
 
