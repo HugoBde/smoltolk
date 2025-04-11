@@ -1,28 +1,27 @@
-use color_eyre::Result;
+use anyhow::Result;
 use lazy_static::lazy_static;
-use reqwest::blocking::Client;
 use serde::{Deserialize, Serialize};
 
 use crate::chat::Chat;
-use crate::message::Author;
+use crate::message::{Author, Message};
 
 lazy_static! {
-  static ref GEMINI_API_KEY: String = std::env::var("GEMINI_API_KEY").unwrap();
+  pub static ref GEMINI_API_KEY: String = std::env::var("GEMINI_API_KEY").unwrap();
 }
 
 #[derive(Serialize)]
-struct Request {
-  contents: Vec<Message>,
+struct GeminiRequest {
+  contents: Vec<GeminiMessage>,
 }
 
 #[derive(Serialize)]
-struct Message {
+struct GeminiMessage {
   role:  &'static str,
   parts: Vec<MessagePart>,
 }
 
 #[derive(Deserialize)]
-struct Response {
+struct GeminiResponse {
   candidates: Vec<Candidate>,
 }
 
@@ -41,9 +40,7 @@ struct MessagePart {
   text: String,
 }
 
-pub fn send_req(chat: &Chat) -> Result<String> {
-  let client = Client::new();
-
+pub fn to_req_body(chat: &Chat) -> Result<String> {
   let contents = chat
     .messages
     .iter()
@@ -55,27 +52,23 @@ pub fn send_req(chat: &Chat) -> Result<String> {
       let parts = vec![MessagePart {
         text: m.text.clone(),
       }];
-      return Message { role, parts };
+      return GeminiMessage { role, parts };
     })
     .collect();
 
-  let req_body = Request { contents };
+  let req = GeminiRequest { contents };
 
-  let req_body = serde_json::to_string(&req_body)?;
+  let req_body = serde_json::to_string(&req)?;
 
-  let req = client.post(
-    &format!("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={}", 
-      *GEMINI_API_KEY
-      )
-    )
-    .header("Content-Type", "application/json")
-    .body(req_body);
+  return Ok(req_body);
+}
 
-  let res = req.send()?.text()?;
+pub fn to_response(res: String) -> Result<Message> {
+  let res = serde_json::from_str::<GeminiResponse>(&res)?;
 
-  let res = serde_json::from_str::<Response>(&res)?;
+  let msg = res.candidates[0].content.parts[0].text.clone();
 
-  let res = res.candidates[0].content.parts[0].text.clone();
+  let msg = Message::new(msg, Author::AI);
 
-  return Ok(res);
+  return Ok(msg);
 }
