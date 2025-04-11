@@ -1,10 +1,11 @@
-use color_eyre::Result;
+use anyhow::Result;
 use smoltolk::app::App;
 
-fn main() -> Result<()> {
+#[tokio::main(flavor = "current_thread")]
+async fn main() -> Result<()> {
   let mut terminal = ratatui::init();
   let mut app = App::new();
-  let result = app.run(&mut terminal);
+  let result = app.run(&mut terminal).await;
   ratatui::restore();
   return result;
 }

@@ -6,7 +6,10 @@ use crate::chat::Chat;
 use crate::message::{Author, Message};
 
 lazy_static! {
-  pub static ref GEMINI_API_KEY: String = std::env::var("GEMINI_API_KEY").unwrap();
+  pub static ref GEMINI_API_ADDRESS: String = {
+    let gemini_api_key = std::env::var("GEMINI_API_KEY").unwrap();
+    return format!("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={}", gemini_api_key);
+  };
 }
 
 #[derive(Serialize)]
